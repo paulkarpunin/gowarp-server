@@ -1596,9 +1596,9 @@ bot_menu() {
 
 show_info() {
     clear; echo ""
-    echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║  📚 WARP Manager v${WARP_VERSION}                            ║${NC}"
-    echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${MAGENTA}══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${MAGENTA}  📚 WARP Manager v${WARP_VERSION}                             ${NC}"
+    echo -e "${MAGENTA}══════════════════════════════════════════════════════════════${NC}"
     echo ""
     if has_3xui_mode; then
         echo -e "${CYAN}═══ 3X-UI ═══${NC}\n"
@@ -1630,9 +1630,9 @@ show_info() {
 
 full_uninstall() {
     clear
-    echo -e "\n${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║            ⚠  ПОЛНОЕ УДАЛЕНИЕ WARP MANAGER  ⚠                  ║${NC}"
-    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+    echo -e "\n${RED}══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${RED}            ⚠  ПОЛНОЕ УДАЛЕНИЕ WARP MANAGER  ⚠                  ${NC}"
+    echo -e "${RED}════════════════════════════════════════════════════════════════${NC}\n"
     echo -e "${WHITE}Режим: ${CYAN}${MODE}${NC}\n"
     read -p "$(echo -e "${RED}Удалить полностью? (y/n): ${NC}")" c1
     [[ "$c1" != "y" ]] && return
@@ -1668,9 +1668,9 @@ show_menu() {
         [ "$MODE" = "amnezia" ] && mode_label="AmneziaWG"
         [ "$MODE" = "both" ] && mode_label="3X-UI + AmneziaWG"
 
-        echo -e "${MAGENTA}╔══════════════════════════════════════════════════════╗"
-        echo -e "║  gowarp-server  ·  WARP Manager v${WARP_VERSION}               ║"
-        echo -e "╚════════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${MAGENTA}══════════════════════════════════════════════════════${NC}"
+        echo -e "${MAGENTA}  gowarp-server  ·  WARP Manager v${WARP_VERSION}     ${NC}"
+        echo -e "${MAGENTA}══════════════════════════════════════════════════════${NC}"
         echo -e "  ${WHITE}IP сервера:${NC} ${GREEN}${MY_IP}${NC}   ${WHITE}Режим:${NC} ${CYAN}${mode_label}${NC}"
         echo -e "  ${WHITE}WARP:${NC} ${sc}${st}${NC}"
         if has_3xui_mode && is_warp_running_3xui 2>/dev/null; then
@@ -1736,9 +1736,9 @@ run_startup() {
     local total=6 s=0
 
     clear; echo ""
-    echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║            WARP Manager v${WARP_VERSION} — Загрузка          ║${NC}"
-    echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${MAGENTA}══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${MAGENTA}            WARP Manager v${WARP_VERSION} — Загрузка          ${NC}"
+    echo -e "${MAGENTA}══════════════════════════════════════════════════════════════${NC}"
     echo ""
 
     ((s++))
