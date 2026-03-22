@@ -1597,7 +1597,7 @@ bot_menu() {
 show_info() {
     clear; echo ""
     echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║  📚 WARP Manager v${WARP_VERSION}                                          ║${NC}"
+    echo -e "${MAGENTA}║  📚 WARP Manager v${WARP_VERSION}                            ║${NC}"
     echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     if has_3xui_mode; then
@@ -1631,8 +1631,8 @@ show_info() {
 full_uninstall() {
     clear
     echo -e "\n${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║            ⚠  ПОЛНОЕ УДАЛЕНИЕ WARP MANAGER  ⚠              ║${NC}"
-    echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}\n"
+    echo -e "${RED}║            ⚠  ПОЛНОЕ УДАЛЕНИЕ WARP MANAGER  ⚠                  ║${NC}"
+    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
     echo -e "${WHITE}Режим: ${CYAN}${MODE}${NC}\n"
     read -p "$(echo -e "${RED}Удалить полностью? (y/n): ${NC}")" c1
     [[ "$c1" != "y" ]] && return
@@ -1737,7 +1737,7 @@ run_startup() {
 
     clear; echo ""
     echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║            WARP Manager v${WARP_VERSION} — Загрузка                         ║${NC}"
+    echo -e "${MAGENTA}║            WARP Manager v${WARP_VERSION} — Загрузка          ║${NC}"
     echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
