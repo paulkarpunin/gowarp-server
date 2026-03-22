@@ -7,6 +7,7 @@ set -o pipefail
 # ══════════════════════════════════════════════════════════════
 
 WARP_VERSION="2.1"
+SCRIPT_URL="https://raw.githubusercontent.com/paulkarpunin/gowarp-server/main/warp.sh"
 WARP_DIR="/etc/warp-manager"
 WARP_CONF="$WARP_DIR/config"
 WARP_LOG="/var/log/warp-manager.log"
@@ -1758,11 +1759,10 @@ run_startup() {
     ((s++))
     printf "  ${CYAN}[%d/%d]${NC}  ${YELLOW}⏳${NC}  Установка gowarp..." "$s" "$total"
     local upgrade_msg="установлена"
-    if [ -f "/usr/local/bin/gowarp" ] && [ "$(readlink -f "$0" 2>/dev/null)" != "/usr/local/bin/gowarp" ]; then
-        upgrade_msg="обновлена (v${WARP_VERSION})"
-    fi
+    [ -f "/usr/local/bin/gowarp" ] && upgrade_msg="обновлена (v${WARP_VERSION})"
     if [ "$(readlink -f "$0" 2>/dev/null)" != "/usr/local/bin/gowarp" ]; then
-        cp -f "$0" "/usr/local/bin/gowarp"; chmod +x "/usr/local/bin/gowarp"
+        curl -fsSL "$SCRIPT_URL" -o "/usr/local/bin/gowarp" && chmod +x "/usr/local/bin/gowarp" \
+            || { cp -f "$0" "/usr/local/bin/gowarp" 2>/dev/null && chmod +x "/usr/local/bin/gowarp"; }
     fi
     printf "\r  ${CYAN}[%d/%d]${NC}  ${GREEN}✓${NC}   Команда gowarp %s                    \n" "$s" "$total" "$upgrade_msg"
 
