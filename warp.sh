@@ -2,11 +2,11 @@
 set -o pipefail
 
 # ══════════════════════════════════════════════════════════════
-#  WARP Manager v2.1 — Unified 3X-UI + AmneziaWG
+#  WARP Manager v1.0 — Unified 3X-UI + AmneziaWG
 #  Cloudflare WARP · Telegram Bot · Auto-detect mode
 # ══════════════════════════════════════════════════════════════
 
-WARP_VERSION="2.1"
+WARP_VERSION="1.0"
 SCRIPT_URL="https://raw.githubusercontent.com/paulkarpunin/gowarp-server/main/warp.sh"
 WARP_DIR="/etc/warp-manager"
 WARP_CONF="$WARP_DIR/config"
