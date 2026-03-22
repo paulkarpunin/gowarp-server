@@ -4,7 +4,6 @@ set -o pipefail
 # ══════════════════════════════════════════════════════════════
 #  WARP Manager v2.1 — Unified 3X-UI + AmneziaWG
 #  Cloudflare WARP · Telegram Bot · Auto-detect mode
-#  Channel: https://www.youtube.com/@antenkaru
 # ══════════════════════════════════════════════════════════════
 
 WARP_VERSION="2.1"
@@ -25,11 +24,6 @@ AWG_WARP_CLIENTS="$AWG_WARP_DIR/clients.list"
 AWG_MARKER_BEGIN="# --- WARP-MANAGER BEGIN ---"
 AWG_MARKER_END="# --- WARP-MANAGER END ---"
 
-VALID_KEYS=(
-    "WARP-PRO-2026-ALPHA"
-    "WARP-PRO-2026-BETA"
-    "WARP-PRO-2026-GAMMA"
-)
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'
 YELLOW='\033[1;33m'; MAGENTA='\033[0;35m'; WHITE='\033[1;37m'
@@ -39,7 +33,6 @@ SOCKS_PORT=""
 MY_IP=""
 BOT_TOKEN=""
 BOT_CHAT_ID=""
-LICENSE_KEY=""
 MODE=""
 
 CONTAINER=""
@@ -65,7 +58,6 @@ init_config() {
 SOCKS_PORT="40000"
 BOT_TOKEN=""
 BOT_CHAT_ID=""
-LICENSE_KEY=""
 MODE=""
 CONTAINER=""
 CONF
@@ -132,33 +124,6 @@ detect_mode() {
     save_config_val "MODE" "$MODE"
 }
 
-# ═══════════════════════════════════════════════════════════════
-#  LICENSE
-# ═══════════════════════════════════════════════════════════════
-
-is_valid_key() {
-    local k="$1"
-    for vk in "${VALID_KEYS[@]}"; do [ "$k" = "$vk" ] && return 0; done
-    return 1
-}
-
-check_license() {
-    local arg_key="${1:-}"
-    source "$WARP_CONF" 2>/dev/null
-    if [ -n "${LICENSE_KEY:-}" ] && is_valid_key "$LICENSE_KEY"; then return 0; fi
-    if [ -n "$arg_key" ] && is_valid_key "$arg_key"; then
-        save_config_val "LICENSE_KEY" "$arg_key"; LICENSE_KEY="$arg_key"; return 0
-    fi
-    echo -e "\n${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║              ⛔  ЛИЦЕНЗИОННЫЙ КЛЮЧ НЕДЕЙСТВИТЕЛЕН           ║${NC}"
-    echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    [ -n "$arg_key" ] && echo -e "  ${WHITE}Ключ ${YELLOW}${arg_key}${WHITE} не найден.${NC}" \
-        || echo -e "  ${WHITE}Для установки требуется лицензионный ключ.${NC}"
-    echo -e "\n  ${CYAN}Использование:${NC}\n  ${WHITE}bash <(curl -sL ...) ${GREEN}ВАШ_КЛЮЧ${NC}"
-    echo -e "\n  ${WHITE}Получить ключ: ${CYAN}https://www.youtube.com/@antenkaru${NC}\n"
-    exit 1
-}
 
 # ═══════════════════════════════════════════════════════════════
 #  LOGGING / SYSTEM
@@ -1206,8 +1171,7 @@ kbd_main_3xui() {
   [{"text":"▶️ Запустить","callback_data":"on"},{"text":"⏹ Остановить","callback_data":"off"}],
   [{"text":"🔑 Перевыпуск","callback_data":"rk"}],
   [{"text":"📋 JSON 3X-UI","callback_data":"js"}],
-  [{"text":"💻 Система","callback_data":"sys"}],
-  [{"text":"🏢 Хостинг","callback_data":"promo"}]
+  [{"text":"💻 Система","callback_data":"sys"}]
 ]
 JSON
 }
@@ -1219,8 +1183,7 @@ kbd_main_awg() {
   [{"text":"▶️ Запустить","callback_data":"on"},{"text":"⏹ Остановить","callback_data":"off"}],
   [{"text":"🔑 Перевыпуск","callback_data":"rk"}],
   [{"text":"👥 Клиенты WARP","callback_data":"cl"},{"text":"🔄 Контейнер","callback_data":"rc"}],
-  [{"text":"💻 Система","callback_data":"sys"}],
-  [{"text":"🏢 Хостинг","callback_data":"promo"}]
+  [{"text":"💻 Система","callback_data":"sys"}]
 ]
 JSON
 }
@@ -1233,8 +1196,7 @@ kbd_main_both() {
   [{"text":"🔑 Перевыпуск","callback_data":"rk"}],
   [{"text":"📋 JSON 3X-UI","callback_data":"js"},{"text":"👥 Клиенты AWG","callback_data":"cl"}],
   [{"text":"🔄 Контейнер","callback_data":"rc"}],
-  [{"text":"💻 Система","callback_data":"sys"}],
-  [{"text":"🏢 Хостинг","callback_data":"promo"}]
+  [{"text":"💻 Система","callback_data":"sys"}]
 ]
 JSON
 }
@@ -1460,9 +1422,6 @@ bot_handle_callback() {
             if has_awg_mode; then s+="\n<b>Контейнер:</b> ${CONTAINER:-N/A}"; fi
             tg_edit "$chat_id" "$msg_id" "$s" "$(kbd_back)" ;;
 
-        promo)
-            local pt="<b>🏢 Хостинг со скидкой до -60%</b>\n\n<b>🌍 РФ и Европа</b>\n👉 https://vk.cc/ct29NQ\n\n<code>OFF60</code> — 60% скидка\n<code>antenka20</code> — +20% к балансу (3мес)\n<code>antenka6</code> — +15% к балансу (6мес)\n<code>antenka12</code> — +5% к балансу (12мес)\n\n<b>🇧🇾 Беларусь</b>\n👉 https://vk.cc/cUxAhj\n<code>OFF60</code> — 60% скидка"
-            tg_edit "$chat_id" "$msg_id" "$pt" "$(kbd_back)" ;;
     esac
 }
 
@@ -1631,22 +1590,8 @@ bot_menu() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-#  PROMO / INFO
+#  INFO
 # ═══════════════════════════════════════════════════════════════
-
-show_promo() {
-    clear; echo ""
-    echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║ ХОСТИНГ СО СКИДКОЙ ДО -60%                                 ║${NC}"
-    echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════╝${NC}"
-    echo -e "\n${CYAN}🌍 РФ И ЕВРОПА${NC}\n${WHITE} >>> https://vk.cc/ct29NQ${NC}"
-    printf " ${YELLOW}%-12s${NC} : ${WHITE}%s${NC}\n" "OFF60" "60% скидка" "antenka20" "+20% (3мес)" "antenka6" "+15% (6мес)" "antenka12" "+5% (12мес)"
-    echo -e "\n${CYAN}🇧🇾 БЕЛАРУСЬ${NC}\n${WHITE} >>> https://vk.cc/cUxAhj${NC}"
-    printf " ${YELLOW}%-12s${NC} : ${WHITE}%s${NC}\n" "OFF60" "60% скидка"
-    echo -e "\n${YELLOW}QR-код...${NC}"; sleep 2
-    echo -e "\n${WHITE}"; command -v qrencode &>/dev/null && qrencode -t ANSIUTF8 "https://vk.cc/ct29NQ" || echo "Ссылки выше."; echo -e "${NC}"
-    read -p "Enter..."
-}
 
 show_info() {
     clear; echo ""
@@ -1756,9 +1701,8 @@ show_menu() {
         echo -e "  8) 🤖 ${CYAN}Настройка и управление ботом${NC}"
 
         echo -e "\n${CYAN}── Прочее ─────────────────────────────────────────────${NC}"
-        echo -e "  9) ${YELLOW}PROMO${NC}"
-        echo -e " 10) ${MAGENTA}📚 Инструкция${NC}"
-        echo -e " 11) ${RED}⚠  Полное удаление${NC}"
+        echo -e "  9) ${MAGENTA}📚 Инструкция${NC}"
+        echo -e " 10) ${RED}⚠  Полное удаление${NC}"
         echo -e "  0) Выход"
         echo -e "${CYAN}──────────────────────────────────────────────────────${NC}"
         read -p "  Выбор: " ch
@@ -1777,9 +1721,8 @@ show_menu() {
             6)  has_3xui_mode && show_3xui_menu ;;
             7)  has_awg_mode && awg_toggle_clients_ssh ;;
             8)  bot_menu ;;
-            9)  show_promo ;;
-            10) show_info ;;
-            11) full_uninstall ;;
+            9)  show_info ;;
+            10) full_uninstall ;;
             0)  exit 0 ;;
         esac
     done
@@ -1862,7 +1805,6 @@ run_startup() {
     echo -e "\n  ${GREEN}✅  WARP Manager v${WARP_VERSION} (${mode_label}) готов!${NC}\n"
     sleep 2
 
-    show_promo
     show_info
     show_menu
 }
@@ -1873,5 +1815,5 @@ run_startup() {
 
 case "${1:-}" in
     --bot-daemon) init_config; bot_daemon ;;
-    *) init_config; check_license "${1:-}"; run_startup ;;
+    *) init_config; run_startup ;;
 esac
