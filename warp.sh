@@ -1669,9 +1669,8 @@ show_menu() {
         [ "$MODE" = "both" ] && mode_label="3X-UI + AmneziaWG"
 
         echo -e "${MAGENTA}╔══════════════════════════════════════════════════════╗"
-        echo -e "║  anten-ka  ·  WARP Manager v${WARP_VERSION}                      ║"
-        echo -e "║  YouTube: https://www.youtube.com/@antenkaru          ║"
-        echo -e "╚══════════════════════════════════════════════════════╝${NC}"
+        echo -e "║  gowarp-server  ·  WARP Manager v${WARP_VERSION}               ║"
+        echo -e "╚════════════════════════════════════════════════════════════════╝${NC}"
         echo -e "  ${WHITE}IP сервера:${NC} ${GREEN}${MY_IP}${NC}   ${WHITE}Режим:${NC} ${CYAN}${mode_label}${NC}"
         echo -e "  ${WHITE}WARP:${NC} ${sc}${st}${NC}"
         if has_3xui_mode && is_warp_running_3xui 2>/dev/null; then
