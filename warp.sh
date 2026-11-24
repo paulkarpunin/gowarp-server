@@ -44,6 +44,7 @@ AWG_CLIENTS_TABLE=""
 AWG_START_SH=""
 AWG_SUBNET=""
 AWG_WARP_EXIT_IP=""
+AWG_WARP_EXIT_IP6=""
 declare -a AWG_SELECTED_IPS=()
 declare -a AWG_CLIENT_IPS=()
 declare -A AWG_CLIENT_NAMES=()
@@ -201,6 +202,15 @@ get_warp_ip_3xui() {
     curl -s4 --max-time 5 --proxy socks5h://127.0.0.1:${SOCKS_PORT} ifconfig.me 2>/dev/null || echo "N/A"
 }
 
+get_warp_ip6_3xui() {
+    local v6
+    v6=$(curl -s6 --max-time 5 --proxy socks5h://127.0.0.1:${SOCKS_PORT} ifconfig.me 2>/dev/null | tr -d '\r\n')
+    if [ -z "$v6" ]; then
+        v6=$(curl -s6 --max-time 5 --proxy socks5h://127.0.0.1:${SOCKS_PORT} https://api64.ipify.org 2>/dev/null | tr -d '\r\n')
+    fi
+    [ -n "$v6" ] && echo "$v6" || echo "N/A"
+}
+
 install_warp_3xui() {
     clear; echo -e "\n${CYAN}━━━ Установка Cloudflare WARP (3X-UI) ━━━${NC}\n"
     if is_warp_installed_3xui; then
@@ -239,9 +249,11 @@ install_warp_3xui() {
     echo -e "${YELLOW}[6/6]${NC} Подключение..."
     warp-cli --accept-tos connect > /dev/null 2>&1; sleep 3
     if is_warp_running_3xui; then
-        local wip; wip=$(get_warp_ip_3xui)
-        echo -e "${GREEN}  ✓ WARP IP: ${wip}${NC}"
-        log_action "3XUI INSTALL: port=${SOCKS_PORT}, warp_ip=${wip}"
+        local wip wip6
+        wip=$(get_warp_ip_3xui); wip6=$(get_warp_ip6_3xui)
+        echo -e "${GREEN}  ✓ WARP IPv4: ${wip}${NC}"
+        echo -e "${GREEN}  ✓ WARP IPv6: ${wip6}${NC}"
+        log_action "3XUI INSTALL: port=${SOCKS_PORT}, warp_ip=${wip}, warp_ip6=${wip6}"
     else
         echo -e "${YELLOW}  ⚠ Подключение не подтверждено.${NC}"
     fi
@@ -281,8 +293,11 @@ rekey_warp_3xui() {
     warp-cli --accept-tos mode proxy > /dev/null 2>&1; warp-cli --accept-tos proxy port "${SOCKS_PORT}" > /dev/null 2>&1
     warp-cli --accept-tos connect > /dev/null 2>&1; sleep 3
     if is_warp_running_3xui; then
-        local wip; wip=$(get_warp_ip_3xui)
-        echo -e "${GREEN}  ✓ Новый WARP IP: ${wip}${NC}"; log_action "3XUI REKEY: warp_ip=${wip}"
+        local wip wip6
+        wip=$(get_warp_ip_3xui); wip6=$(get_warp_ip6_3xui)
+        echo -e "${GREEN}  ✓ Новый WARP IPv4: ${wip}${NC}"
+        echo -e "${GREEN}  ✓ Новый WARP IPv6: ${wip6}${NC}"
+        log_action "3XUI REKEY: warp_ip=${wip}, warp_ip6=${wip6}"
     else echo -e "${YELLOW}  ⚠ Подключение не подтверждено.${NC}"; fi
     read -p "Enter..."
 }
@@ -309,7 +324,8 @@ show_3xui_menu() {
         echo -e "\n${CYAN}━━━ Настройки SOCKS5 для 3X-UI ━━━${NC}\n"
         echo -e "  ${WHITE}SOCKS5-прокси:${NC} ${GREEN}127.0.0.1:${SOCKS_PORT}${NC}"
         if is_warp_running_3xui; then
-            echo -e "  ${WHITE}WARP IP:${NC}       ${GREEN}$(get_warp_ip_3xui)${NC}"
+            echo -e "  ${WHITE}WARP IPv4:${NC}     ${GREEN}$(get_warp_ip_3xui)${NC}"
+            echo -e "  ${WHITE}WARP IPv6:${NC}     ${GREEN}$(get_warp_ip6_3xui)${NC}"
         fi
         echo -e "\n  1) 📋 Показать JSON Outbound и Routing"
         echo -e "  2) 📖 Пошаговая инструкция для 3X-UI"
@@ -372,7 +388,8 @@ EOF
     echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "  ${WHITE}SOCKS5:${NC}  ${GREEN}127.0.0.1:${SOCKS_PORT}${NC}"
     if is_warp_running_3xui; then
-        echo -e "  ${WHITE}WARP IP:${NC} ${GREEN}$(get_warp_ip_3xui)${NC}"
+        echo -e "  ${WHITE}WARP IPv4:${NC} ${GREEN}$(get_warp_ip_3xui)${NC}"
+        echo -e "  ${WHITE}WARP IPv6:${NC} ${GREEN}$(get_warp_ip6_3xui)${NC}"
     fi
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""; read -p "Enter..."
@@ -441,7 +458,10 @@ show_status_3xui() {
     local sc="$RED"; [[ "$st" == "Подключён" ]] && sc="$GREEN"; [[ "$st" == "Отключён" ]] && sc="$YELLOW"
     echo -e "  ${WHITE}Статус:      ${sc}${st}${NC}"
     echo -e "  ${WHITE}Реальный IP: ${GREEN}${MY_IP}${NC}"
-    is_warp_running_3xui && echo -e "  ${WHITE}WARP IP:     ${GREEN}$(get_warp_ip_3xui)${NC}"
+    if is_warp_running_3xui; then
+        echo -e "  ${WHITE}WARP IPv4:   ${GREEN}$(get_warp_ip_3xui)${NC}"
+        echo -e "  ${WHITE}WARP IPv6:   ${GREEN}$(get_warp_ip6_3xui)${NC}"
+    fi
 
     echo -e "\n${CYAN}── Настройки SOCKS5-прокси ──${NC}\n"
     echo -e "  ${WHITE}Адрес:${NC}  ${GREEN}127.0.0.1${NC}"
@@ -556,10 +576,23 @@ awg_load_container_data() {
 
 awg_detect_warp_exit_ip() {
     AWG_WARP_EXIT_IP=""
+    AWG_WARP_EXIT_IP6=""
     if docker exec "$CONTAINER" sh -c "ip addr show warp >/dev/null 2>&1" 2>/dev/null; then
         AWG_WARP_EXIT_IP=$(docker exec "$CONTAINER" sh -c \
-            "curl -s --interface warp --connect-timeout 3 https://ifconfig.me 2>/dev/null || true" | tr -d '\r\n')
+            "curl -s4 --interface warp --connect-timeout 3 https://ifconfig.me 2>/dev/null || true" | tr -d '\r\n')
+        # IPv6: сначала пробуем определить реальный выход, затем адрес на интерфейсе warp
+        AWG_WARP_EXIT_IP6=$(docker exec "$CONTAINER" sh -c \
+            "curl -s6 --interface warp --connect-timeout 3 https://ifconfig.me 2>/dev/null || true" | tr -d '\r\n')
+        if [ -z "$AWG_WARP_EXIT_IP6" ]; then
+            AWG_WARP_EXIT_IP6=$(docker exec "$CONTAINER" sh -c \
+                "ip -6 -o addr show dev warp scope global 2>/dev/null | awk '{print \$4}' | cut -d/ -f1 | head -1" | tr -d '\r\n')
+        fi
     fi
+}
+
+# IPv6-адрес WARP из свежего профиля wgcf (используется при сборке и правилах)
+awg_get_profile_v6() {
+    awk -F' = ' '/^Address = /{print $2}' "$WGCF_PROFILE" 2>/dev/null | tr -d ' ' | cut -d',' -f2
 }
 
 is_warp_installed_awg() {
@@ -623,7 +656,7 @@ awg_build_warp_conf() {
     local pk pub addr
     pk=$(awk -F' = ' '/^PrivateKey = /{print $2}' "$WGCF_PROFILE")
     pub=$(awk -F' = ' '/^PublicKey = /{print $2}' "$WGCF_PROFILE")
-    addr=$(awk -F' = ' '/^Address = /{print $2}' "$WGCF_PROFILE" | cut -d',' -f1)
+    addr=$(awk -F' = ' '/^Address = /{print $2}' "$WGCF_PROFILE" | tr -d ' ')
 
     docker exec "$CONTAINER" sh -c "mkdir -p '$AWG_WARP_DIR'"
     docker cp "$WGCF_PROFILE" "${CONTAINER}:${AWG_WARP_DIR}/wgcf-profile.conf" 2>/dev/null
@@ -636,7 +669,7 @@ Table = off
 
 [Peer]
 PublicKey = ${pub}
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = ${endpoint_ip}:2408
 PersistentKeepalive = 25
 WARPEOF
@@ -682,9 +715,10 @@ install_warp_awg() {
     awg_warp_up || { read -p "Enter..."; return; }; echo -e "${GREEN}  ✓${NC}"
 
     awg_detect_warp_exit_ip
-    [ -n "$AWG_WARP_EXIT_IP" ] && echo -e "\n  ${WHITE}WARP IP: ${GREEN}${AWG_WARP_EXIT_IP}${NC}"
+    echo -e "\n  ${WHITE}WARP IPv4: ${GREEN}${AWG_WARP_EXIT_IP:-N/A}${NC}"
+    echo -e "  ${WHITE}WARP IPv6: ${GREEN}${AWG_WARP_EXIT_IP6:-N/A}${NC}"
     echo -e "\n${GREEN}WARP установлен! Управление клиентами — п.6.${NC}"
-    log_action "AWG INSTALL: endpoint=${ep}, warp_ip=${AWG_WARP_EXIT_IP}"
+    log_action "AWG INSTALL: endpoint=${ep}, warp_ip=${AWG_WARP_EXIT_IP}, warp_ip6=${AWG_WARP_EXIT_IP6}"
     read -p "Enter..."
 }
 
@@ -723,8 +757,9 @@ rekey_warp_awg() {
     awg_patch_start_sh
     awg_detect_warp_exit_ip
     echo -e "${GREEN}  ✓ Готово!${NC}"
-    [ -n "$AWG_WARP_EXIT_IP" ] && echo -e "  ${WHITE}Новый WARP IP: ${GREEN}${AWG_WARP_EXIT_IP}${NC}"
-    log_action "AWG REKEY: warp_ip=${AWG_WARP_EXIT_IP}"
+    echo -e "  ${WHITE}Новый WARP IPv4: ${GREEN}${AWG_WARP_EXIT_IP:-N/A}${NC}"
+    echo -e "  ${WHITE}Новый WARP IPv6: ${GREEN}${AWG_WARP_EXIT_IP6:-N/A}${NC}"
+    log_action "AWG REKEY: warp_ip=${AWG_WARP_EXIT_IP}, warp_ip6=${AWG_WARP_EXIT_IP6}"
     read -p "Enter..."
 }
 
@@ -737,7 +772,8 @@ show_status_awg() {
     echo -e "  ${WHITE}WARP:      ${sc}${st}${NC}"
     echo -e "  ${WHITE}Реальный IP: ${GREEN}${MY_IP}${NC}"
     awg_detect_warp_exit_ip
-    [ -n "$AWG_WARP_EXIT_IP" ] && echo -e "  ${WHITE}WARP IP:   ${GREEN}${AWG_WARP_EXIT_IP}${NC}"
+    echo -e "  ${WHITE}WARP IPv4: ${GREEN}${AWG_WARP_EXIT_IP:-N/A}${NC}"
+    echo -e "  ${WHITE}WARP IPv6: ${GREEN}${AWG_WARP_EXIT_IP6:-N/A}${NC}"
 
     awg_load_clients
     echo -e "\n  ${WHITE}Клиентов в WARP: ${CYAN}${#AWG_SELECTED_IPS[@]}${NC}"
@@ -999,7 +1035,15 @@ awg_cleanup_rules() {
             rule=$(echo "$line" | sed "s/^-A /-D /")
             iptables -t nat $rule || true
         done
+        ip6tables -t nat -S POSTROUTING 2>/dev/null | grep "\-o warp -j MASQUERADE" | while read -r line; do
+            rule=$(echo "$line" | sed "s/^-A /-D /")
+            ip6tables -t nat $rule 2>/dev/null || true
+        done
+        ip -6 rule 2>/dev/null | awk "/lookup 100/ {print \$1}" | sed "s/://g" | sort -rn | while read -r pr; do
+            ip -6 rule del priority "$pr" 2>/dev/null || true
+        done
         ip route flush table 100 2>/dev/null || true
+        ip -6 route flush table 100 2>/dev/null || true
     ' >/dev/null 2>&1 || true
 }
 
@@ -1016,6 +1060,17 @@ awg_apply_rules() {
         "
         ((prio++))
     done
+
+    # IPv6 через warp
+    local w6; w6=$(awg_get_profile_v6)
+    if [ -n "$w6" ]; then
+        docker exec "$CONTAINER" sh -c "
+            ip -6 rule add from ${w6} table 100 priority 102 2>/dev/null || true
+            ip -6 route add default dev warp table 100 2>/dev/null || ip -6 route replace default dev warp table 100 2>/dev/null || true
+            ip6tables -t nat -C POSTROUTING -s ${w6} -o warp -j MASQUERADE 2>/dev/null || \
+            ip6tables -t nat -I POSTROUTING 1 -s ${w6} -o warp -j MASQUERADE 2>/dev/null || true
+        " >/dev/null 2>&1 || true
+    fi
 }
 
 awg_patch_start_sh() {
@@ -1040,6 +1095,13 @@ awg_patch_start_sh() {
             warp_block+="iptables -t nat -C POSTROUTING -s ${ip} -o warp -j MASQUERADE 2>/dev/null || iptables -t nat -I POSTROUTING 1 -s ${ip} -o warp -j MASQUERADE"$'\n'
             ((prio++))
         done
+
+        local w6; w6=$(awg_get_profile_v6)
+        if [ -n "$w6" ]; then
+            warp_block+="ip -6 rule add from ${w6} table 100 priority 102 2>/dev/null || true"$'\n'
+            warp_block+="ip -6 route add default dev warp table 100 2>/dev/null || ip -6 route replace default dev warp table 100 2>/dev/null || true"$'\n'
+            warp_block+="ip6tables -t nat -C POSTROUTING -s ${w6} -o warp -j MASQUERADE 2>/dev/null || ip6tables -t nat -I POSTROUTING 1 -s ${w6} -o warp -j MASQUERADE 2>/dev/null || true"$'\n'
+        fi
     fi
 
     warp_block+=""$'\n'
@@ -1101,14 +1163,15 @@ get_warp_status() {
 
 get_warp_ip() {
     if [ "$MODE" = "both" ]; then
-        local ip3 ipa
-        ip3=$(get_warp_ip_3xui)
-        awg_detect_warp_exit_ip; ipa="${AWG_WARP_EXIT_IP:-N/A}"
-        echo "3X-UI: ${ip3} | AWG: ${ipa}"
+        local ip3 ip6_3 ipa ipa6
+        ip3=$(get_warp_ip_3xui); ip6_3=$(get_warp_ip6_3xui)
+        awg_detect_warp_exit_ip; ipa="${AWG_WARP_EXIT_IP:-N/A}"; ipa6="${AWG_WARP_EXIT_IP6:-N/A}"
+        echo "3X-UI: ${ip3} (${ip6_3}) | AWG: ${ipa} (${ipa6})"
     elif [ "$MODE" = "3xui" ]; then
-        get_warp_ip_3xui
+        echo "$(get_warp_ip_3xui) ($(get_warp_ip6_3xui))"
     else
-        awg_detect_warp_exit_ip; echo "${AWG_WARP_EXIT_IP:-N/A}"
+        awg_detect_warp_exit_ip
+        echo "${AWG_WARP_EXIT_IP:-N/A} (${AWG_WARP_EXIT_IP6:-N/A})"
     fi
 }
 
@@ -1217,7 +1280,7 @@ bot_main_menu() {
     local chat_id="$1" msg_id="${2:-}"
     local ws wip="" extra=""
     ws=$(get_warp_status)
-    is_warp_running && wip=" | WARP IP: $(get_warp_ip)"
+    is_warp_running && wip=" | WARP: $(get_warp_ip)"
     if has_3xui_mode; then extra+="\nSOCKS5: <code>127.0.0.1:${SOCKS_PORT}</code>"; fi
     if has_awg_mode; then extra+="\nКонтейнер: <code>${CONTAINER:-N/A}</code>"; fi
     local mode_label="3X-UI"
@@ -1244,7 +1307,7 @@ bot_handle_callback() {
         st)
             local ws wip="" extra=""
             ws=$(get_warp_status)
-            is_warp_running && wip="\nWARP IP: <code>$(get_warp_ip)</code>"
+            is_warp_running && wip="\nWARP IPv4/IPv6: <code>$(get_warp_ip)</code>"
             if has_3xui_mode; then
                 extra+="\nSOCKS5: <code>127.0.0.1:${SOCKS_PORT}</code>"
                 local raw; raw=$(warp-cli --accept-tos status 2>/dev/null | head -3)
@@ -1258,8 +1321,15 @@ bot_handle_callback() {
             tg_edit "$chat_id" "$msg_id" "📊 <b>Статус WARP</b>\n\nСтатус: <b>${ws}</b>\nСервер: <code>${MY_IP:-N/A}</code>${wip}${extra}" "$(kbd_back)" ;;
 
         ip)
-            local wip="N/A"; is_warp_running && wip=$(get_warp_ip)
-            local t="🌐 <b>IP адреса</b>\n\n<b>Реальный:</b> <code>${MY_IP:-N/A}</code>\n<b>WARP:</b> <code>${wip}</code>"
+            local wip="N/A" wip6="N/A"
+            if has_3xui_mode; then
+                wip=$(get_warp_ip_3xui); wip6=$(get_warp_ip6_3xui)
+            fi
+            if has_awg_mode; then
+                awg_detect_warp_exit_ip
+                wip="${AWG_WARP_EXIT_IP:-N/A}"; wip6="${AWG_WARP_EXIT_IP6:-N/A}"
+            fi
+            local t="🌐 <b>IP адреса</b>\n\n<b>Реальный:</b> <code>${MY_IP:-N/A}</code>\n<b>WARP IPv4:</b> <code>${wip}</code>\n<b>WARP IPv6:</b> <code>${wip6}</code>"
             if has_3xui_mode; then t+="\n<b>SOCKS5:</b> <code>127.0.0.1:${SOCKS_PORT}</code>"; fi
             tg_edit "$chat_id" "$msg_id" "$t" "$(kbd_back)" ;;
 
@@ -1269,14 +1339,14 @@ bot_handle_callback() {
             if has_3xui_mode && is_warp_installed_3xui; then
                 warp-cli --accept-tos connect > /dev/null 2>&1; sleep 3
                 if is_warp_running_3xui; then
-                    result+="✅ 3X-UI: $(get_warp_ip_3xui)\n"; log_action "BOT 3XUI ON"
+                    result+="✅ 3X-UI: $(get_warp_ip_3xui) / $(get_warp_ip6_3xui)\n"; log_action "BOT 3XUI ON"
                 else result+="❌ 3X-UI: ошибка\n"; fi
             fi
             if has_awg_mode && is_warp_installed_awg; then
                 awg_warp_up 2>/dev/null
                 if is_warp_running_awg; then
                     awg_detect_warp_exit_ip
-                    result+="✅ AWG: ${AWG_WARP_EXIT_IP:-?}\n"; log_action "BOT AWG ON"
+                    result+="✅ AWG: ${AWG_WARP_EXIT_IP:-?} / ${AWG_WARP_EXIT_IP6:-?}\n"; log_action "BOT AWG ON"
                 else result+="❌ AWG: ошибка\n"; fi
             fi
             [ -z "$result" ] && result="❌ WARP не установлен."
@@ -1309,8 +1379,9 @@ bot_handle_callback() {
                 warp-cli --accept-tos proxy port "${SOCKS_PORT}" > /dev/null 2>&1
                 warp-cli --accept-tos connect > /dev/null 2>&1; sleep 3
                 if is_warp_running_3xui; then
-                    local w; w=$(get_warp_ip_3xui)
-                    result+="✅ 3X-UI: <code>${w}</code>\n"; log_action "BOT 3XUI REKEY: ${w}"
+                    local w w6
+                    w=$(get_warp_ip_3xui); w6=$(get_warp_ip6_3xui)
+                    result+="✅ 3X-UI: <code>${w} / ${w6}</code>\n"; log_action "BOT 3XUI REKEY: ${w} / ${w6}"
                 else result+="⚠️ 3X-UI: не подтверждено\n"; fi
             fi
             if has_awg_mode; then
@@ -1324,7 +1395,7 @@ bot_handle_callback() {
                         awg_warp_up 2>/dev/null
                         awg_load_clients; awg_apply_rules; awg_patch_start_sh
                         awg_detect_warp_exit_ip
-                        result+="✅ AWG: <code>${AWG_WARP_EXIT_IP:-?}</code>\n"; log_action "BOT AWG REKEY"
+                        result+="✅ AWG: <code>${AWG_WARP_EXIT_IP:-?} / ${AWG_WARP_EXIT_IP6:-?}</code>\n"; log_action "BOT AWG REKEY: ${AWG_WARP_EXIT_IP} / ${AWG_WARP_EXIT_IP6}"
                     else result+="❌ AWG: ошибка endpoint\n"; fi
                 else result+="❌ AWG: ошибка профиля\n"; fi
             fi
